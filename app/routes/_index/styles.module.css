@@ -1,0 +1,142 @@
+.page {
+  min-height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  background: #f4f7fb;
+  color: var(--brand-ink, #10233f);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 48px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 36%),
+    linear-gradient(160deg, var(--brand, #1a4fbf) 0%, var(--brand-ink, #10233f) 78%);
+}
+
+.kicker {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.brand h1 {
+  margin: 0 0 12px;
+  max-width: 14ch;
+  font-size: 48px;
+  line-height: 1.05;
+}
+
+.brand p {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.points {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.points li {
+  max-width: 36rem;
+}
+
+.points strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.card {
+  width: min(100%, 420px);
+  padding: 28px;
+  border: 1px solid var(--brand-line, #d5e0f5);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.card p {
+  margin: 0 0 20px;
+  color: var(--brand-muted, #3d4d63);
+  line-height: 1.5;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.input {
+  padding: 12px 14px;
+  border: 1px solid var(--brand-line, #d5e0f5);
+  border-radius: 10px;
+  font: inherit;
+}
+
+.input:focus {
+  outline: 2px solid var(--brand, #1a4fbf);
+  border-color: transparent;
+}
+
+.button {
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--brand, #1a4fbf);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hint {
+  font-weight: 400;
+  color: var(--brand-muted, #3d4d63);
+}
+
+@media (max-width: 860px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    order: -1;
+  }
+
+  .brand {
+    padding: 32px 24px;
+  }
+
+  .brand h1 {
+    font-size: 36px;
+  }
+}

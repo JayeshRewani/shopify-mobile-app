@@ -1,0 +1,627 @@
+.live {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 390px);
+  max-height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.live-status {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid #e6e8ee;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #22c55e;
+}
+
+.live-screens {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  gap: 6px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.live-screens::-webkit-scrollbar {
+  display: none;
+}
+
+.live-screens button,
+.live-theme {
+  border: 1px solid #e6e8ee;
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.live-screens button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 7px 4px;
+  overflow: hidden;
+  font-size: 12px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-screens button.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.live-theme {
+  padding: 6px 10px;
+}
+
+.live-device {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  flex: 1 1 0%;
+  height: 0;
+  min-height: 0;
+  padding: 12px 10px 14px;
+  overflow: hidden;
+  border-radius: 44px;
+  background: #0e0e10;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 28px 60px rgba(17, 17, 17, 0.28);
+}
+
+.live-screen {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.live-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 5;
+  width: 138px;
+  height: 22px;
+  transform: translateX(-50%);
+  border-radius: 0 0 14px 14px;
+  background: #0f172a;
+}
+
+.live-header,
+.live-tabs,
+.live-buybar,
+.live-sheet {
+  backdrop-filter: blur(10px);
+}
+
+.live-header {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 34px 16px 12px;
+  border-bottom: 1px solid transparent;
+}
+
+.live-brand,
+.live-header-actions,
+.live-price-row,
+.live-row,
+.live-stepper {
+  display: flex;
+  align-items: center;
+}
+
+.live-brand {
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.live-logo {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+}
+
+.live-title {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.live-icon,
+.live-heart {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.live-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.live-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 92px;
+}
+
+.live-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.live-pad {
+  display: grid;
+  gap: 18px;
+  padding: 16px;
+}
+
+.live-search,
+.live-card,
+.live-deal,
+.live-line,
+.live-wish,
+.live-account {
+  border: 1px solid transparent;
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.05);
+}
+
+.live-search {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.live-banner {
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+  color: #fff;
+}
+
+.live-banner span,
+.live-off,
+.live-sale {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.live-banner h2 {
+  margin: 8px 0 4px;
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.live-banner p,
+.live-muted {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.live-banner button,
+.live-add,
+.live-buy,
+.live-move {
+  border: 0;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.live-banner button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #fff;
+  color: #111;
+}
+
+.live-label-row,
+.live-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.live-link {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.live-chips,
+.live-row-scroll {
+  display: flex;
+  gap: 8px;
+  overflow: auto;
+}
+
+.live-chips button,
+.live-chip {
+  border: 1px solid transparent;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.live-deal {
+  width: 148px;
+  flex: 0 0 auto;
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.live-photo {
+  position: relative;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.live-photo img,
+.live-hero img,
+.live-line img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.live-photo.square {
+  aspect-ratio: 1;
+}
+
+.live-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.live-card {
+  position: relative;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.live-card h3,
+.live-deal h3,
+.live-name {
+  display: -webkit-box;
+  margin: 6px 0 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.live-price {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.live-was {
+  color: #9ca3af;
+  font-size: 10px;
+  text-decoration: line-through;
+}
+
+.live-heart {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.live-plus {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.live-hero {
+  width: 100%;
+  height: 188px;
+  min-height: 188px;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.live-hero img {
+  display: block;
+  width: 100%;
+  height: 188px;
+  object-fit: cover;
+}
+
+.live-feedback {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid transparent;
+}
+
+.live-feedback p {
+  margin: 0;
+}
+
+.live-buybar {
+  position: absolute;
+  right: 10px;
+  bottom: 76px;
+  left: 10px;
+  z-index: 4;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(17, 17, 17, 0.08);
+}
+
+.live-buybar button,
+.live-buy {
+  flex: 1;
+  padding: 14px 12px;
+  font-size: 14px;
+}
+
+.live-tabs {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  height: 76px;
+  padding: 8px 10px 12px;
+  border-width: 1px 0 0;
+  border-style: solid;
+  border-radius: 0 0 32px 32px;
+}
+
+.live-tabs button {
+  display: grid;
+  gap: 2px;
+  place-items: center;
+  min-width: 0;
+  padding: 6px 2px 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.live-tabs button span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-tabs button.active {
+  transform: translateY(-1px);
+}
+
+.live-sheet-back {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.live-sheet {
+  width: 100%;
+  max-height: 86%;
+  padding: 14px;
+  border-radius: 24px 24px 0 0;
+}
+
+.live-line,
+.live-wish {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin-top: 0;
+  padding: 10px;
+}
+
+.live-wish-copy {
+  min-width: 0;
+}
+
+.live-wish .live-name {
+  margin: 0;
+}
+
+.live-empty-icon svg {
+  width: 36px;
+  height: 36px;
+}
+
+.live-cart-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 8px;
+}
+
+.live-cart-row img {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.live-cart-row h3 {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.live-wish-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.live-move {
+  padding: 7px 12px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.live-line img,
+.live-wish img {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.live-stepper {
+  gap: 8px;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+}
+
+.live-stepper button {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.live-account {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+}
+
+.live-avatar {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 800;
+}
+
+.live-timeline {
+  display: grid;
+  gap: 14px;
+  margin-left: 8px;
+  padding-left: 16px;
+  border-left: 2px solid currentColor;
+}
+
+.live-map {
+  display: grid;
+  place-items: center;
+  height: 120px;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle, rgba(99, 102, 241, 0.45) 1px, transparent 1px) 0 0 / 16px 16px,
+    #1e293b;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}

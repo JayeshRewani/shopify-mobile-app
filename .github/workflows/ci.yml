@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        env:
+          SHOPIFY_APP_URL: https://example.com
+          SHOPIFY_API_KEY: ci
+          SHOPIFY_API_SECRET: ci
+          SCOPES: read_products
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?pgbouncer=true
+          DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+        run: npm run build

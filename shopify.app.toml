@@ -2,7 +2,7 @@
 
 client_id = "72a37eb4340e3e88b759faf4bee7a591"
 name = "mobile app"
-application_url = "https://example.com"
+application_url = "https://shopify-mobile-app-tau.vercel.app/"
 embedded = true
 
 [access_scopes]
@@ -23,7 +23,7 @@ api_version = "2027-01"
   topics = [ "app/scopes_update" ]
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://shopify-mobile-app-tau.vercel.app/api/auth" ]
 
 [build]
 automatically_update_urls_on_dev = true

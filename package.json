@@ -19,7 +19,9 @@
     "prisma": "prisma",
     "graphql-codegen": "graphql-codegen",
     "vite": "vite",
-    "typecheck": "react-router typegen && tsc --noEmit"
+    "typecheck": "react-router typegen && tsc --noEmit",
+    "test": "node --test app/services/orders/*.test.js",
+    "test:orders": "node --test app/services/orders/*.test.js"
   },
   "type": "module",
   "engines": {

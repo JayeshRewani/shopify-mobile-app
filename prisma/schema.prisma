@@ -57,3 +57,74 @@ model ShopConfig {
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
 }
+
+// Shopify is source of truth. These tables cache webhook order snapshots.
+model OrderShop {
+  shopDomain String   @id @map("shop_domain")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  webhookDeliveries WebhookDelivery[]
+  orders            SyncedOrder[]
+  guestTokens       GuestOrderToken[]
+
+  @@map("shops")
+}
+
+model WebhookDelivery {
+  webhookId  String   @id @map("webhook_id")
+  eventId    String?  @map("event_id")
+  shopDomain String   @map("shop_domain")
+  topic      String
+  receivedAt DateTime @default(now()) @map("received_at")
+
+  shop OrderShop @relation(fields: [shopDomain], references: [shopDomain], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("webhook_deliveries")
+}
+
+model SyncedOrder {
+  shopDomain         String    @map("shop_domain")
+  shopifyOrderId     String    @map("shopify_order_id")
+  orderNumber        String?   @map("order_number")
+  customerId         String?   @map("customer_id")
+  customerEmail      String?   @map("customer_email")
+  financialStatus    String?   @map("financial_status")
+  fulfillmentStatus  String?   @map("fulfillment_status")
+  cancelledAt        DateTime? @map("cancelled_at")
+  currency           String?
+  totalPrice         String?   @map("total_price")
+  checkoutToken      String?   @map("checkout_token")
+  shopifyUpdatedAt   DateTime  @map("updated_at")
+  payloadJson        Json      @map("payload_json")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  shop OrderShop @relation(fields: [shopDomain], references: [shopDomain], onDelete: Cascade)
+
+  @@id([shopDomain, shopifyOrderId])
+  @@index([shopDomain, customerId])
+  @@index([shopDomain, customerEmail])
+  @@index([shopDomain, checkoutToken])
+  @@map("orders")
+}
+
+model GuestOrderToken {
+  tokenHash      String    @id @map("token_hash")
+  shopDomain     String    @map("shop_domain")
+  shopifyOrderId String    @map("shopify_order_id")
+  expiresAt      DateTime  @map("expires_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  consumedAt     DateTime? @map("consumed_at")
+
+  shop OrderShop @relation(fields: [shopDomain], references: [shopDomain], onDelete: Cascade)
+
+  @@map("guest_order_tokens")
+}
+
+model MobileRateLimit {
+  bucketKey       String   @id @map("bucket_key")
+  windowStartedAt DateTime @map("window_started_at")
+  hitCount        Int      @default(0) @map("hit_count")
+
+  @@map("mobile_rate_limits")
+}

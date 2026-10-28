@@ -235,3 +235,13 @@ Shopify:
 Internationalization:
 
 - [Internationalizing your app](https://shopify.dev/docs/apps/best-practices/internationalization/getting-started)
+
+## Mobile order sync
+
+Shopify is the source of truth for orders. See [docs/mobile-orders.md](docs/mobile-orders.md) for env vars, scopes (`read_orders`, `read_fulfillments`), webhook topics, API routes, and the reinstall checklist.
+
+```shell
+npm test
+```
+
+`POST /api/mobile/orders` returns **410** `{ error: "client_order_create_disabled" }`. Use reconcile + webhooks instead.

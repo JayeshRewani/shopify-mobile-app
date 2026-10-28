@@ -9,7 +9,8 @@ embedded = true
 # Admin scopes read the store during install. Unauthenticated scopes are
 # delegated to the Storefront token the mobile app receives.
 # Customer Account scopes are intentionally omitted.
-scopes = "read_products,read_content,read_online_store_navigation,read_metaobjects,read_metaobject_definitions,unauthenticated_read_product_listings,unauthenticated_read_product_inventory,unauthenticated_write_checkouts,unauthenticated_read_checkouts,unauthenticated_read_content,unauthenticated_read_metaobjects"
+# read_orders + read_fulfillments power webhook-synced mobile order history.
+scopes = "read_products,read_content,read_online_store_navigation,read_metaobjects,read_metaobject_definitions,read_orders,read_fulfillments,unauthenticated_read_product_listings,unauthenticated_read_product_inventory,unauthenticated_write_checkouts,unauthenticated_read_checkouts,unauthenticated_read_content,unauthenticated_read_metaobjects"
 
 [webhooks]
 api_version = "2027-01"
@@ -21,6 +22,18 @@ api_version = "2027-01"
   [[webhooks.subscriptions]]
   uri = "/webhooks/app/scopes_update"
   topics = [ "app/scopes_update" ]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/orders"
+  topics = [
+    "orders/create",
+    "orders/updated",
+    "orders/cancelled",
+    "orders/fulfilled",
+    "orders/partially_fulfilled",
+    "fulfillments/create",
+    "fulfillments/update"
+  ]
 
 [auth]
 redirect_urls = [ "https://shopify-mobile-app-tau.vercel.app/api/auth" ]

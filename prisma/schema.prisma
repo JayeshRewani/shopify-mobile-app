@@ -56,6 +56,8 @@ model ShopConfig {
   publishedDesign         Json?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
+
+  mobileApps MobileApp[]
 }
 
 // Shopify is source of truth. These tables cache webhook order snapshots.
@@ -127,4 +129,205 @@ model MobileRateLimit {
   hitCount        Int      @default(0) @map("hit_count")
 
   @@map("mobile_rate_limits")
+}
+
+// Push notifications. The SQL for these tables lives in prisma/held-migrations
+// until a production apply is explicitly approved. prisma migrate deploy does
+// not read that directory.
+enum DevicePlatform {
+  ANDROID
+  IOS
+
+  @@map("device_platform")
+}
+
+enum AudienceType {
+  ALL
+  ANDROID
+  IOS
+  SEGMENT
+
+  @@map("audience_type")
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+
+  @@map("campaign_status")
+}
+
+enum DeliveryStatus {
+  PENDING
+  ACCEPTED
+  FAILED
+  INVALID_TOKEN
+
+  @@map("delivery_status")
+}
+
+enum NotificationJobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+
+  @@map("notification_job_status")
+}
+
+// DATABASE stores the service-account JSON in Postgres for the MVP.
+// SECRETS_MANAGER and KMS keep external_ref for a later move off the database.
+enum FirebaseCredentialStorage {
+  DATABASE
+  SECRETS_MANAGER
+  KMS
+
+  @@map("firebase_credential_storage")
+}
+
+model MobileApp {
+  id                   String   @id @default(cuid())
+  shopDomain           String   @unique @map("shop_domain")
+  androidPackageId     String?  @map("android_package_id")
+  iosBundleId          String?  @map("ios_bundle_id")
+  firebaseProjectId    String?  @map("firebase_project_id")
+  androidFirebaseAppId String?  @map("android_firebase_app_id")
+  iosFirebaseAppId     String?  @map("ios_firebase_app_id")
+  deepLinkScheme       String?  @map("deep_link_scheme")
+  registrationKeyHash  String?  @map("registration_key_hash")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  shop                 ShopConfig          @relation(fields: [shopDomain], references: [shop], onDelete: Cascade)
+  deviceTokens         DeviceToken[]
+  campaigns            NotificationCampaign[]
+  firebaseCredential   FirebaseCredential?
+
+  @@unique([id, shopDomain])
+  @@map("mobile_apps")
+}
+
+model DeviceToken {
+  id          String         @id @default(cuid())
+  shopDomain  String         @map("shop_domain")
+  mobileAppId String         @map("mobile_app_id")
+  customerId  String?        @map("customer_id")
+  token       String
+  platform    DevicePlatform
+  isActive    Boolean        @default(true) @map("is_active")
+  lastSeenAt  DateTime       @default(now()) @map("last_seen_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  mobileApp  MobileApp              @relation(fields: [mobileAppId, shopDomain], references: [id, shopDomain], onDelete: Cascade)
+  deliveries NotificationDelivery[]
+
+  @@unique([id, shopDomain])
+  @@index([shopDomain, mobileAppId, isActive, platform])
+  @@index([shopDomain, customerId])
+  @@index([mobileAppId, isActive, id])
+  @@map("device_tokens")
+}
+
+model NotificationCampaign {
+  id                String         @id @default(cuid())
+  shopDomain        String         @map("shop_domain")
+  mobileAppId       String         @map("mobile_app_id")
+  name              String
+  title             String
+  message           String
+  imageUrl          String?        @map("image_url")
+  iconUrl           String?        @map("icon_url")
+  deepLink          String?        @map("deep_link")
+  audienceType      AudienceType   @map("audience_type")
+  platform          DevicePlatform?
+  status            CampaignStatus @default(DRAFT)
+  scheduledAt       DateTime?      @map("scheduled_at")
+  startedAt         DateTime?      @map("started_at")
+  completedAt       DateTime?      @map("completed_at")
+  cancelRequested   Boolean        @default(false) @map("cancel_requested")
+  targetedCount     Int            @default(0) @map("targeted_count")
+  attemptedCount    Int            @default(0) @map("attempted_count")
+  acceptedCount     Int            @default(0) @map("accepted_count")
+  failedCount       Int            @default(0) @map("failed_count")
+  invalidTokenCount Int            @default(0) @map("invalid_token_count")
+  deliveredCount    Int            @default(0) @map("delivered_count")
+  openedCount       Int            @default(0) @map("opened_count")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  mobileApp  MobileApp              @relation(fields: [mobileAppId, shopDomain], references: [id, shopDomain], onDelete: Cascade)
+  deliveries NotificationDelivery[]
+  job        NotificationJob?
+
+  @@unique([id, shopDomain])
+  @@unique([id, shopDomain, mobileAppId])
+  @@index([shopDomain, createdAt])
+  @@index([shopDomain, status])
+  @@index([status, scheduledAt])
+  @@map("notification_campaigns")
+}
+
+model NotificationDelivery {
+  id                String         @id @default(cuid())
+  campaignId        String         @map("campaign_id")
+  deviceTokenId     String         @map("device_token_id")
+  shopDomain        String         @map("shop_domain")
+  status            DeliveryStatus
+  providerMessageId String?        @map("provider_message_id")
+  errorCode         String?        @map("error_code")
+  errorMessage      String?        @map("error_message")
+  attemptedAt       DateTime?      @map("attempted_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  campaign    NotificationCampaign @relation(fields: [campaignId, shopDomain], references: [id, shopDomain], onDelete: Cascade)
+  deviceToken DeviceToken          @relation(fields: [deviceTokenId, shopDomain], references: [id, shopDomain], onDelete: Cascade)
+
+  @@unique([campaignId, deviceTokenId])
+  @@index([campaignId, status])
+  @@index([shopDomain])
+  @@map("notification_deliveries")
+}
+
+model NotificationJob {
+  id           String                @id @default(cuid())
+  campaignId   String                @map("campaign_id")
+  shopDomain   String                @map("shop_domain")
+  mobileAppId  String                @map("mobile_app_id")
+  cursor       String?
+  status       NotificationJobStatus @default(QUEUED)
+  sqsMessageId String?               @map("sqs_message_id")
+  attemptCount Int                   @default(0) @map("attempt_count")
+  lockedUntil  DateTime?             @map("locked_until")
+  lastError    String?               @map("last_error")
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+
+  campaign NotificationCampaign @relation(fields: [campaignId, shopDomain, mobileAppId], references: [id, shopDomain, mobileAppId], onDelete: Cascade)
+
+  @@unique([campaignId, shopDomain, mobileAppId])
+  @@index([shopDomain, status])
+  @@map("notification_jobs")
+}
+
+// One Firebase credential row per shop. shop_domain is the merchant id
+// (ShopConfig.shop). service_account_json is server-only.
+model FirebaseCredential {
+  id                 String                    @id @default(cuid())
+  shopDomain         String                    @unique @map("shop_domain")
+  mobileAppId        String                    @unique @map("mobile_app_id")
+  storage            FirebaseCredentialStorage @default(DATABASE)
+  serviceAccountJson String?                   @map("service_account_json") @db.Text
+  externalRef        String?                   @map("external_ref")
+  createdAt          DateTime                  @default(now()) @map("created_at")
+  updatedAt          DateTime                  @updatedAt @map("updated_at")
+
+  mobileApp MobileApp @relation(fields: [mobileAppId, shopDomain], references: [id, shopDomain], onDelete: Cascade)
+
+  @@unique([mobileAppId, shopDomain])
+  @@map("firebase_credentials")
 }

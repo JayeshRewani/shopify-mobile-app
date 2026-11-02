@@ -1,0 +1,9 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "mobile-app-notifications"
+region = "ap-south-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
+resolve_s3 = true
+parameter_overrides = "DatabaseUrl=\"SET_AT_DEPLOY_DO_NOT_COMMIT\""

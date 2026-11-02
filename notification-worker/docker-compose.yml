@@ -1,0 +1,21 @@
+services:
+  queue:
+    image: softwaremill/elasticmq-native:1.6.12
+    ports:
+      - "9324:9324"
+      - "9325:9325"
+    volumes:
+      - ./elasticmq.conf:/opt/elasticmq.conf:ro
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notifications_dev
+    ports:
+      - "54329:5432"
+    volumes:
+      - notifications_pg:/var/lib/postgresql/data
+
+volumes:
+  notifications_pg:

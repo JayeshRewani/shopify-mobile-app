@@ -1,0 +1,165 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+
+  @@map("device_platform")
+}
+
+enum AudienceType {
+  ALL
+  ANDROID
+  IOS
+  SEGMENT
+
+  @@map("audience_type")
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+
+  @@map("campaign_status")
+}
+
+enum DeliveryStatus {
+  PENDING
+  ACCEPTED
+  FAILED
+  INVALID_TOKEN
+
+  @@map("delivery_status")
+}
+
+enum NotificationJobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+
+  @@map("notification_job_status")
+}
+
+enum FirebaseCredentialStorage {
+  DATABASE
+  SECRETS_MANAGER
+  KMS
+
+  @@map("firebase_credential_storage")
+}
+
+model MobileApp {
+  id         String @id
+  shopDomain String @map("shop_domain")
+
+  deviceTokens DeviceToken[]
+  campaigns    NotificationCampaign[]
+  firebaseCredential FirebaseCredential?
+
+  @@unique([id, shopDomain])
+  @@map("mobile_apps")
+}
+
+model DeviceToken {
+  id          String         @id
+  shopDomain  String         @map("shop_domain")
+  mobileAppId String         @map("mobile_app_id")
+  token       String
+  platform    DevicePlatform
+  isActive    Boolean        @map("is_active")
+
+  mobileApp  MobileApp              @relation(fields: [mobileAppId, shopDomain], references: [id, shopDomain])
+  deliveries NotificationDelivery[]
+
+  @@unique([id, shopDomain])
+  @@map("device_tokens")
+}
+
+model NotificationCampaign {
+  id              String         @id
+  shopDomain      String         @map("shop_domain")
+  mobileAppId     String         @map("mobile_app_id")
+  title           String
+  message         String
+  imageUrl        String?        @map("image_url")
+  deepLink        String?        @map("deep_link")
+  audienceType    AudienceType   @map("audience_type")
+  platform        DevicePlatform?
+  status          CampaignStatus
+  scheduledAt     DateTime?      @map("scheduled_at")
+  startedAt       DateTime?      @map("started_at")
+  completedAt     DateTime?      @map("completed_at")
+  cancelRequested Boolean        @map("cancel_requested")
+  attemptedCount  Int            @map("attempted_count")
+  acceptedCount   Int            @map("accepted_count")
+  failedCount     Int            @map("failed_count")
+  invalidTokenCount Int          @map("invalid_token_count")
+
+  mobileApp  MobileApp              @relation(fields: [mobileAppId, shopDomain], references: [id, shopDomain])
+  deliveries NotificationDelivery[]
+  job        NotificationJob?
+
+  @@unique([id, shopDomain])
+  @@unique([id, shopDomain, mobileAppId])
+  @@map("notification_campaigns")
+}
+
+model NotificationDelivery {
+  id                String         @id @default(cuid())
+  campaignId        String         @map("campaign_id")
+  deviceTokenId     String         @map("device_token_id")
+  shopDomain        String         @map("shop_domain")
+  status            DeliveryStatus
+  providerMessageId String?        @map("provider_message_id")
+  errorCode         String?        @map("error_code")
+  errorMessage      String?        @map("error_message")
+  attemptedAt       DateTime?      @map("attempted_at")
+
+  campaign    NotificationCampaign @relation(fields: [campaignId, shopDomain], references: [id, shopDomain])
+  deviceToken DeviceToken          @relation(fields: [deviceTokenId, shopDomain], references: [id, shopDomain])
+
+  @@unique([campaignId, deviceTokenId])
+  @@map("notification_deliveries")
+}
+
+model NotificationJob {
+  id           String                @id @default(cuid())
+  campaignId   String                @map("campaign_id")
+  shopDomain   String                @map("shop_domain")
+  mobileAppId  String                @map("mobile_app_id")
+  status       NotificationJobStatus
+  lastError    String?               @map("last_error")
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+
+  campaign NotificationCampaign @relation(fields: [campaignId, shopDomain, mobileAppId], references: [id, shopDomain, mobileAppId])
+
+  @@unique([campaignId, shopDomain, mobileAppId])
+  @@map("notification_jobs")
+}
+
+model FirebaseCredential {
+  id                 String                    @id
+  shopDomain         String                    @map("shop_domain")
+  mobileAppId        String                    @map("mobile_app_id")
+  storage            FirebaseCredentialStorage
+  serviceAccountJson String?                   @map("service_account_json")
+
+  mobileApp MobileApp @relation(fields: [mobileAppId, shopDomain], references: [id, shopDomain])
+
+  @@unique([mobileAppId, shopDomain])
+  @@map("firebase_credentials")
+}

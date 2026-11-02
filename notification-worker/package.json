@@ -1,0 +1,24 @@
+{
+  "name": "notification-worker",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.19 <22 || >=22.12"
+  },
+  "scripts": {
+    "test": "node --test src/**/*.test.js",
+    "generate": "prisma generate",
+    "queue:up": "docker compose up -d",
+    "queue:down": "docker compose down",
+    "queue:logs": "docker compose logs -f queue",
+    "db:up": "docker compose up -d postgres"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.908.0",
+    "@prisma/client": "^6.16.3",
+    "firebase-admin": "^13.5.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.16.3"
+  }
+}

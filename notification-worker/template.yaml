@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Notification worker for ap-south-1. Reuses the existing jobs queue, dead-letter
+  queue, and Lambda execution role. Does not create those resources.
+
+Parameters:
+  ExistingJobsQueueArn:
+    Type: String
+    Default: arn:aws:sqs:ap-south-1:874287870446:mobile-app-notifications-jobs
+  ExistingJobsQueueUrl:
+    Type: String
+    Default: https://sqs.ap-south-1.amazonaws.com/874287870446/mobile-app-notifications-jobs
+  LambdaExecutionRoleArn:
+    Type: String
+    Default: arn:aws:iam::874287870446:role/mobile-app-notifications-lambda-role
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+    Description: Postgres URL for the worker. Pass at deploy time. Do not commit it.
+  NotificationBatchSize:
+    Type: Number
+    Default: 500
+    MinValue: 1
+    MaxValue: 500
+
+Resources:
+  ProcessPageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: mobile-app-notifications-process-page
+      CodeUri: .
+      Handler: src/handler.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Timeout: 60
+      ReservedConcurrentExecutions: 5
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          DATABASE_URL: !Ref DatabaseUrl
+          NOTIFICATIONS_QUEUE_URL: !Ref ExistingJobsQueueUrl
+          NOTIFICATION_BATCH_SIZE: !Ref NotificationBatchSize
+      Events:
+        JobsQueue:
+          Type: SQS
+          Properties:
+            Queue: !Ref ExistingJobsQueueArn
+            BatchSize: 1
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+
+  PromoteScheduledFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: mobile-app-notifications-promote-scheduled
+      CodeUri: .
+      Handler: src/promote-handler.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Timeout: 30
+      ReservedConcurrentExecutions: 1
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          DATABASE_URL: !Ref DatabaseUrl
+          NOTIFICATIONS_QUEUE_URL: !Ref ExistingJobsQueueUrl
+          NOTIFICATION_BATCH_SIZE: !Ref NotificationBatchSize
+
+  SchedulerInvokeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: mobile-app-notifications-scheduler-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+      Policies:
+        - PolicyName: invoke-promoter
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt PromoteScheduledFunction.Arn
+
+  PromoteInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PromoteScheduledFunction
+      Action: lambda:InvokeFunction
+      Principal: scheduler.amazonaws.com
+      SourceArn: !Sub arn:aws:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/default/mobile-app-notifications-promote-scheduled
+
+  PromoteSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: mobile-app-notifications-promote-scheduled
+      Description: Moves due scheduled campaigns onto the existing jobs queue.
+      ScheduleExpression: rate(1 minute)
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      State: ENABLED
+      Target:
+        Arn: !GetAtt PromoteScheduledFunction.Arn
+        RoleArn: !GetAtt SchedulerInvokeRole.Arn
+        RetryPolicy:
+          MaximumRetryAttempts: 3
+          MaximumEventAgeInSeconds: 300
+
+Outputs:
+  ProcessPageFunctionArn:
+    Value: !GetAtt ProcessPageFunction.Arn
+  PromoteScheduledFunctionArn:
+    Value: !GetAtt PromoteScheduledFunction.Arn
+  SchedulerRoleArn:
+    Value: !GetAtt SchedulerInvokeRole.Arn

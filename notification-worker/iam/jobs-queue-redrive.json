@@ -1,0 +1,4 @@
+{
+  "deadLetterTargetArn": "arn:aws:sqs:ap-south-1:874287870446:mobile-app-notifications-jobs-dlq",
+  "maxReceiveCount": "5"
+}

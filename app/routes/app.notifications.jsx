@@ -105,9 +105,7 @@ export default function NotificationsPage() {
     <div className="push-shell">
       <div className="push-wrap">
         <header className="push-hero">
-          <p className="push-kicker" style={{ color: "rgba(255,255,255,0.8)" }}>
-            Push notifications
-          </p>
+          <p className="push-kicker">Push notifications</p>
           <h1>Reach every install without leaving the browser.</h1>
           <p>
             Compose a campaign, save Firebase once, and queue delivery to your

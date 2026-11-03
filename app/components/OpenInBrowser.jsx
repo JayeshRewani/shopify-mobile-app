@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 /**
- * Shopify installs the app inside an admin iframe. Merchants asked for the
- * full app in a normal browser tab. We keep embedded=true for Auth/App Bridge,
- * auto-open the current URL in a new tab once per session, and show a clear gate
- * if the popup is blocked.
+ * When Shopify opens the app inside the admin iframe, send the top browser
+ * window to our hosted app URL (same path + shop/host query). No popups, no
+ * new-tab loop — one top-level redirect to the Vercel domain.
  */
-export function OpenInBrowser({ children }) {
+export function OpenInBrowser({ children, appUrl }) {
   const [mode, setMode] = useState("checking");
-  const [opened, setOpened] = useState(false);
+  const targetHref = useMemo(() => buildStandaloneHref(appUrl), [appUrl]);
 
   useEffect(() => {
     const framed = window.self !== window.top;
@@ -18,12 +17,12 @@ export function OpenInBrowser({ children }) {
     }
 
     setMode("framed");
-    const flag = "mobile-app-open-in-browser";
-    if (sessionStorage.getItem(flag)) return;
-    sessionStorage.setItem(flag, "1");
-    const popup = window.open(window.location.href, "_blank", "noopener,noreferrer");
-    if (popup) setOpened(true);
-  }, []);
+    try {
+      window.top.location.replace(targetHref);
+    } catch {
+      // Cross-window navigation blocked; show the manual top link below.
+    }
+  }, [targetHref]);
 
   if (mode === "checking") {
     return <div className="browser-gate browser-gate-loading">Opening app…</div>;
@@ -34,43 +33,15 @@ export function OpenInBrowser({ children }) {
       <div className="browser-gate">
         <div className="browser-gate-card">
           <p className="browser-gate-kicker">Mobile app</p>
-          <h1>Open in your browser</h1>
+          <h1>Continue on the app site</h1>
           <p>
-            This app runs best in a full browser tab — same idea as many Shopify
-            apps that leave the small admin frame.
+            Shopify opened this inside Admin. You will be sent to the full app
+            on your domain — not another Admin popup.
           </p>
-          {opened ? (
-            <p className="browser-gate-ok">
-              A new tab was opened. Use that tab for the full app. You can leave
-              this panel or continue here.
-            </p>
-          ) : (
-            <p className="browser-gate-warn">
-              Your browser blocked the popup. Click the button below once.
-            </p>
-          )}
           <div className="browser-gate-actions">
-            <button
-              type="button"
-              className="browser-gate-primary"
-              onClick={() => {
-                const popup = window.open(
-                  window.location.href,
-                  "_blank",
-                  "noopener,noreferrer",
-                );
-                if (popup) setOpened(true);
-              }}
-            >
-              Open app in new tab
-            </button>
-            <button
-              type="button"
-              className="browser-gate-secondary"
-              onClick={() => setMode("top")}
-            >
-              Continue in admin frame
-            </button>
+            <a className="browser-gate-primary" href={targetHref} target="_top" rel="noreferrer">
+              Open app site
+            </a>
           </div>
         </div>
       </div>
@@ -78,4 +49,19 @@ export function OpenInBrowser({ children }) {
   }
 
   return children;
+}
+
+function buildStandaloneHref(appUrl) {
+  if (typeof window === "undefined") return appUrl || "/app";
+
+  const current = new URL(window.location.href);
+  let baseOrigin = current.origin;
+  try {
+    if (appUrl) baseOrigin = new URL(appUrl).origin;
+  } catch {
+    // keep current origin
+  }
+
+  const next = new URL(current.pathname + current.search, baseOrigin);
+  return next.toString();
 }

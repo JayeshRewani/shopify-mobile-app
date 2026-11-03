@@ -8,16 +8,20 @@ import "../styles/notifications.css";
 export const loader = async ({ request }) => {
   await authenticate.admin(request);
 
-  // eslint-disable-next-line no-undef
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  return {
+    // eslint-disable-next-line no-undef
+    apiKey: process.env.SHOPIFY_API_KEY || "",
+    // eslint-disable-next-line no-undef
+    appUrl: process.env.SHOPIFY_APP_URL || "https://shopify-mobile-app-tau.vercel.app",
+  };
 };
 
 export default function App() {
-  const { apiKey } = useLoaderData();
+  const { apiKey, appUrl } = useLoaderData();
 
   return (
     <AppProvider embedded apiKey={apiKey}>
-      <OpenInBrowser>
+      <OpenInBrowser appUrl={appUrl}>
         <s-app-nav>
           <s-link href="/app">Home</s-link>
           <s-link href="/app/design">App studio</s-link>

@@ -37,6 +37,7 @@ Common headers:
 - `X-Shop-Domain: {shop}.myshopify.com`
 - `X-Mobile-Session: <server token>` when signed in
 - `X-Customer-Cookie` only for session exchange
+- Push devices: `X-Registration-Key` (installation key from Admin → Push notifications). Storefront Bearer alone is not enough.
 
 | Method | Path | Notes |
 | --- | --- | --- |
@@ -47,6 +48,8 @@ Common headers:
 | POST | `/api/mobile/orders/reconcile` | `ready` or `pending_sync` |
 | POST | `/api/mobile/orders/guest/request` | Always `{ sent: true }` |
 | POST | `/api/mobile/orders/guest/redeem` | One-time token → order |
+| POST | `/api/mobile/devices/register` | Body: `token`, `platform` (`ANDROID`\|`IOS`); headers: `X-Shop-Domain`, `X-Registration-Key`; optional `X-Mobile-Session` |
+| POST | `/api/mobile/devices/unregister` | Same auth; deactivates the FCM token |
 
 ## Deploy / reinstall checklist
 

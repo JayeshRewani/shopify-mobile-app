@@ -94,6 +94,7 @@ export default function Index() {
           <li>Open the app studio</li>
           <li>Arrange the home screen</li>
           <li>Publish, then open the phone</li>
+          <li>Send push notifications from the browser tab</li>
         </ul>
         <p className="welcome-note">{nextStep}</p>
       </section>
@@ -134,6 +135,9 @@ export default function Index() {
           </dl>
           <Link className="publish welcome-go" to="/app/design">
             Open app studio
+          </Link>
+          <Link className="publish welcome-go" to="/app/notifications" style={{ marginTop: 8 }}>
+            Push notifications
           </Link>
           <button className="quiet" type="button" onClick={syncStore} disabled={isLoading}>
             {isLoading ? "Syncing" : "Sync store"}

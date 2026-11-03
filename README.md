@@ -98,6 +98,7 @@ Common headers for authenticated mobile calls:
 - `Accept` / `Content-Type: application/json`
 - `X-Shop-Domain: {shop}.myshopify.com`
 - `X-Mobile-Session` when signed in
+- Push device register: `X-Registration-Key` (installation key from admin; not the Storefront token)
 - `X-Customer-Cookie` only for session exchange
 
 | Method | Path | Notes |

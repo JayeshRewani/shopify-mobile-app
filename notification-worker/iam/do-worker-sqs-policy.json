@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ConsumeAndContinueJobsQueue",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes",
+        "sqs:ChangeMessageVisibility",
+        "sqs:SendMessage"
+      ],
+      "Resource": "arn:aws:sqs:ap-south-1:874287870446:mobile-app-notifications-jobs"
+    }
+  ]
+}

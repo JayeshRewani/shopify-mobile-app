@@ -10,7 +10,7 @@ embedded = true
 # delegated to the Storefront token the mobile app receives.
 # Customer Account scopes are intentionally omitted.
 # read_orders + read_fulfillments power webhook-synced mobile order history.
-scopes = "read_products,read_content,read_online_store_navigation,read_metaobjects,read_metaobject_definitions,read_orders,read_fulfillments,unauthenticated_read_product_listings,unauthenticated_read_product_inventory,unauthenticated_write_checkouts,unauthenticated_read_checkouts,unauthenticated_read_content,unauthenticated_read_metaobjects"
+scopes = "read_products,read_content,read_files,read_online_store_navigation,read_metaobjects,read_metaobject_definitions,read_orders,read_fulfillments,unauthenticated_read_product_listings,unauthenticated_read_product_inventory,unauthenticated_write_checkouts,unauthenticated_read_checkouts,unauthenticated_read_content,unauthenticated_read_metaobjects"
 
 [webhooks]
 api_version = "2027-01"

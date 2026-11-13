@@ -76,8 +76,8 @@ const SAMPLE = [
 
 export function LivePreview({ design, collections }) {
   const colors = design.theme.colors;
-  const primary = safeColor(colors.primary, "#6366F1");
-  const accent = safeColor(colors.accent, "#F43F5E");
+  const primary = safeColor(colors.primary, "#6B0F2B");
+  const accent = safeColor(colors.accent, "#C4A4AD");
   const radius = Number(design.theme.style.layout?.cardRadius ?? design.theme.style.radius) || 16;
   const [screen, setScreen] = useState("home");
   const [dark, setDark] = useState(false);
@@ -88,11 +88,11 @@ export function LivePreview({ design, collections }) {
   const banner = design.home.find((section) => section.type === "banner");
   const categorySection = design.home.find((section) => section.type === "categories");
   const chips = categoryNames(categorySection, collections);
-  const paper = dark ? "#0f172a" : safeColor(colors.background, "#f8fafc");
-  const ink = dark ? "#f8fafc" : safeColor(colors.text, "#0f172a");
-  const card = dark ? "#111827" : safeColor(colors.surface, "#ffffff");
-  const line = dark ? "#1f2937" : safeColor(colors.border, "#e5e7eb");
-  const muted = safeColor(colors.muted, "#6b7280");
+  const paper = dark ? "#0f0f10" : safeColor(colors.background, "#F8F4E8");
+  const ink = dark ? "#F8F4E8" : safeColor(colors.text, "#0F0F10");
+  const card = dark ? "#1a1816" : safeColor(colors.surface, "#ffffff");
+  const line = dark ? "#2a2623" : safeColor(colors.border, "#E6DFD2");
+  const muted = safeColor(colors.muted, "#6B6560");
   const onPrimary = inkOn(primary);
   const font = fontFamily(design.theme.typography.bodyFont);
   const heading = fontFamily(design.theme.typography.headingFont);

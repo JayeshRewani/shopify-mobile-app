@@ -2,8 +2,8 @@
   min-height: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-  background: var(--color-page, #f7f8f2);
-  color: var(--color-text, #20251d);
+  background: var(--color-page, #f8f4e8);
+  color: var(--color-text, #0f0f10);
   font-family: var(--font-merchant, system-ui, sans-serif);
 }
 
@@ -13,9 +13,9 @@
   justify-content: space-between;
   gap: 32px;
   padding: 48px;
-  color: var(--color-text, #20251d);
+  color: var(--color-text, #0f0f10);
   background: var(--color-surface, #fff);
-  border-right: 1px solid var(--color-border, #dfe3d8);
+  border-right: 1px solid var(--color-border, #e6dfd2);
 }
 
 .kicker {
@@ -25,7 +25,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-primary, #5334d8);
+  color: var(--color-primary, #6b0f2b);
 }
 
 .brand h1 {

@@ -1,27 +1,41 @@
 :root {
-  --color-primary: #5334d8;
-  --color-primary-hover: #4326b8;
-  --color-secondary-highlight: #d6f66b;
-  --color-accent: #ffc9b8;
-  --color-page: #f7f8f2;
-  --color-surface: #ffffff;
-  --color-text: #20251d;
-  --color-muted: #62685d;
-  --color-border: #dfe3d8;
-  --color-input-border: #858b7d;
-  --color-selected: #eee9ff;
-  --color-success: #16734b;
-  --color-error: #b42318;
-  --color-focus: #5334d8;
+  /* DripTrip-aligned merchant theme */
+  --color-oxblood: #6b0f2b;
+  --color-oxblood-hover: #560c23;
+  --color-ivory: #f8f4e8;
+  --color-ink: #0f0f10;
 
+  --color-primary: var(--color-oxblood);
+  --color-primary-hover: var(--color-oxblood-hover);
+  --color-secondary-highlight: #c4a4ad;
+  --color-accent: #c4a4ad;
+  --color-page: var(--color-ivory);
+  --color-surface: #ffffff;
+  --color-text: var(--color-ink);
+  --color-muted: #6b6560;
+  --color-border: #e6dfd2;
+  --color-input-border: #9a9288;
+  --color-selected: #f3e8eb;
+  --color-success: #3d5a3a;
+  --color-error: #6b0f2b;
+  --color-focus: #6b0f2b;
+
+  /* Aliases used across studio / overview / push */
+  --color-sage: #8b4a5a;
+  --color-sage-soft: #f3e8eb;
+  --color-tomato: #6b0f2b;
+  --color-offwhite: #f8f4e8;
+
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
   --font-merchant: "DM Sans Variable", "DM Sans", system-ui, sans-serif;
+  --font-mono: "DM Sans Variable", "DM Sans", system-ui, sans-serif;
   --font-optical-sizing: auto;
 
-  --text-page-title: 700 28px/36px var(--font-merchant);
-  --text-section: 600 18px/26px var(--font-merchant);
-  --text-body: 400 14px/21px var(--font-merchant);
-  --text-label: 600 14px/20px var(--font-merchant);
-  --text-helper: 400 12px/18px var(--font-merchant);
+  --text-page-title: 500 clamp(32px, 3.6vw, 44px) / 1.08 var(--font-display);
+  --text-section: 600 17px/1.35 var(--font-merchant);
+  --text-body: 400 14px/1.55 var(--font-merchant);
+  --text-label: 600 13px/1.4 var(--font-merchant);
+  --text-helper: 400 12px/1.5 var(--font-merchant);
 
   --space-1: 4px;
   --space-2: 8px;
@@ -30,15 +44,14 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  --radius-card: 12px;
-  --radius-control: 8px;
+  --radius-card: 16px;
+  --radius-control: 10px;
   --control-height: 44px;
-  --motion: 150ms ease;
+  --motion: 180ms ease;
   --page-gutter: 24px;
-  --card-padding: 24px;
-  --max-content: 1200px;
+  --card-padding: 28px;
+  --max-content: 1180px;
 
-  /* Backward-compatible aliases used by older merchant styles */
   --brand: var(--color-primary);
   --brand-ink: var(--color-text);
   --brand-soft: var(--color-selected);
@@ -60,12 +73,17 @@ body {
   font-style: normal;
 }
 
+p,
+.merchant-helper {
+  font-family: var(--font-merchant);
+}
+
 button,
 input,
 select,
 textarea {
   font: inherit;
-  font-family: inherit;
+  font-family: var(--font-merchant);
   font-optical-sizing: auto;
   font-style: normal;
 }
@@ -89,8 +107,9 @@ textarea {
 .merchant-page-title {
   margin: 0;
   font: var(--text-page-title);
+  font-family: var(--font-display);
   color: var(--color-text);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .merchant-section-title {
@@ -123,24 +142,20 @@ textarea {
   font-weight: 600;
 }
 
-.merchant-badge-lime {
-  background: var(--color-secondary-highlight);
-  color: var(--color-text);
-}
-
+.merchant-badge-lime,
 .merchant-badge-success {
-  background: #e5f4ec;
+  background: var(--color-sage-soft);
   color: var(--color-success);
 }
 
 .merchant-badge-error {
-  background: #fcebea;
+  background: #f6e6ea;
   color: var(--color-error);
 }
 
 .merchant-badge-selected {
   background: var(--color-selected);
-  color: var(--color-primary);
+  color: var(--color-ink);
 }
 
 .btn-primary,
@@ -154,6 +169,7 @@ textarea {
   padding: 0 16px;
   border-radius: var(--radius-control);
   font: var(--text-label);
+  font-family: var(--font-merchant);
   text-decoration: none;
   cursor: pointer;
   transition:
@@ -222,7 +238,7 @@ textarea {
 .merchant-flash-ok {
   padding: 12px 14px;
   border-radius: var(--radius-control);
-  background: #e5f4ec;
+  background: var(--color-sage-soft);
   color: var(--color-success);
   font: var(--text-label);
 }
@@ -230,7 +246,7 @@ textarea {
 .merchant-flash-err {
   padding: 12px 14px;
   border-radius: var(--radius-control);
-  background: #fcebea;
+  background: #f6e6ea;
   color: var(--color-error);
   font: var(--text-label);
 }

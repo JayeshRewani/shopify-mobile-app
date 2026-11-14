@@ -140,7 +140,10 @@ async function ensureShopCredentialsUnlocked({ admin, shop }) {
 
   return db.shopConfig.update({
     where: { shop },
-    data: credentials,
+    data: {
+      ...credentials,
+      syncError: null,
+    },
   });
 }
 

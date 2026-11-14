@@ -1,15 +1,20 @@
-import { useEffect, useMemo } from "react";
-import { Link, useFetcher, useLoaderData } from "react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useFetcher, useLoaderData, useRevalidator } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
 import { asArray } from "../services/mobile-http.server";
-import { syncShop } from "../services/shop-sync.server";
+import {
+  ensureShopCredentials,
+  syncShop,
+} from "../services/shop-sync.server";
 import {
   designForEditor,
   loadHomePreviewCatalog,
 } from "../services/design.server";
+import { latestPublishLead } from "../services/publish-leads.server";
+import { PublishLeadBanner } from "../components/PublishLeadBanner";
 import "../styles/overview.css";
 
 export const loader = async ({ request }) => {
@@ -17,15 +22,22 @@ export const loader = async ({ request }) => {
   let config = await db.shopConfig.findUnique({ where: { shop: session.shop } });
   let syncFailure = "";
 
+  const needsCurrency =
+    !config?.currencyCode || !/^[A-Z]{3}$/i.test(String(config.currencyCode).trim());
+
   if (
     !config?.storefrontAccessToken ||
+    needsCurrency ||
     (!config.syncedAt && !config.syncError)
   ) {
     try {
-      config = await syncShop({ admin, shop: session.shop });
+      config = needsCurrency && config?.storefrontAccessToken
+        ? await ensureShopCredentials({ admin, shop: session.shop })
+        : await syncShop({ admin, shop: session.shop });
     } catch (error) {
       syncFailure = error.message;
       console.error(`Store sync failed for ${session.shop}`, error);
+      // ensureShopCredentials persists name/currency before token work, so reload.
       config = await db.shopConfig.findUnique({ where: { shop: session.shop } });
     }
   }
@@ -51,6 +63,10 @@ export const loader = async ({ request }) => {
     ? design.home.find((section) => section.type === "banner")
     : null;
 
+  const publishLead = config?.shop
+    ? await latestPublishLead(config.shop)
+    : await latestPublishLead(shop);
+
   return {
     shopDomain: shop,
     shopName,
@@ -63,6 +79,7 @@ export const loader = async ({ request }) => {
     published: Boolean(config?.publishedDesign),
     publishedSections: sectionCount(config?.publishedDesign),
     draftSections: sectionCount(config?.draftDesign),
+    publishRequested: Boolean(publishLead),
     preview: {
       products: preview.products.slice(0, 2),
       bannerImage: preview.bannerImage || preview.products[0]?.image || "",
@@ -94,6 +111,8 @@ export default function Index() {
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const data = useLoaderData();
+  const revalidator = useRevalidator();
+  const [publishOpen, setPublishOpen] = useState(false);
   const isLoading =
     ["loading", "submitting"].includes(fetcher.state) &&
     fetcher.formMethod === "POST";
@@ -129,26 +148,31 @@ export default function Index() {
       },
       {
         id: "publish",
-        title: "Publish to the phone",
-        detail: data.published
-          ? `${data.publishedSections} section${data.publishedSections === 1 ? "" : "s"} live for installs.`
-          : "Publish a draft so phone installs can load it.",
-        done: data.published,
-        href: "/app/design",
+        title: "Publish on the stores",
+        detail: data.publishRequested
+          ? "Launch request received — we will contact you for Play Console, App Store, and Firebase."
+          : "Request a launch. We set up developer accounts, Firebase, and go live on both platforms.",
+        done: data.publishRequested,
+        action: "publish-lead",
       },
     ],
-    [data.connected, data.draftSections, data.published, data.publishedSections],
+    [data.connected, data.draftSections, data.publishRequested],
   );
 
   const currentStep = steps.find((step) => !step.done) || steps[steps.length - 1];
-  const primaryHref = currentStep.id === "sync" ? null : currentStep.href || "/app/design";
+  const primaryHref =
+    currentStep.id === "sync" || currentStep.id === "publish"
+      ? null
+      : currentStep.href || "/app/design";
   const primaryLabel =
     currentStep.id === "sync"
       ? isLoading
         ? "Syncing…"
         : "Connect store →"
       : currentStep.id === "publish"
-        ? "Publish your app →"
+        ? data.publishRequested
+          ? "View launch request →"
+          : "Publish my app →"
         : "Customize your app →";
 
   const phoneColors = {
@@ -161,6 +185,17 @@ export default function Index() {
   return (
     <div className="overview">
       {syncError ? <p className="overview-error">{syncError}</p> : null}
+
+      <PublishLeadBanner
+        open={publishOpen}
+        onClose={() => setPublishOpen(false)}
+        onSubmitted={() => {
+          shopify.toast.show("Launch request sent");
+          revalidator.revalidate();
+        }}
+        shopName={data.shopName}
+        alreadyRequested={data.publishRequested}
+      />
 
       <div className="overview-shell">
         <section className="overview-copy" aria-labelledby="overview-title">
@@ -182,8 +217,14 @@ export default function Index() {
               <button
                 className="overview-cta"
                 type="button"
-                onClick={syncStore}
-                disabled={isLoading}
+                onClick={() => {
+                  if (currentStep.id === "publish") {
+                    setPublishOpen(true);
+                    return;
+                  }
+                  syncStore();
+                }}
+                disabled={isLoading && currentStep.id === "sync"}
               >
                 {primaryLabel}
               </button>
@@ -240,6 +281,14 @@ export default function Index() {
                       disabled={isLoading}
                     >
                       {isLoading ? "Syncing…" : "Continue →"}
+                    </button>
+                  ) : isCurrent && step.action === "publish-lead" ? (
+                    <button
+                      className="overview-step-action"
+                      type="button"
+                      onClick={() => setPublishOpen(true)}
+                    >
+                      Continue →
                     </button>
                   ) : isCurrent && step.href ? (
                     <Link className="overview-step-action" to={step.href}>

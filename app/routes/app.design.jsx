@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFetcher, useLoaderData } from "react-router";
+import { useFetcher, useLoaderData, useRevalidator } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
@@ -13,6 +13,8 @@ import {
   loadShopBrandLogo,
   validateDesign,
 } from "../services/design.server";
+import { latestPublishLead } from "../services/publish-leads.server";
+import { PublishLeadBanner } from "../components/PublishLeadBanner";
 import {
   BRAND_COLOR_KEYS,
   BRAND_COLOR_LABELS,
@@ -82,6 +84,8 @@ export const loader = async ({ request }) => {
     shopName: config.shopName,
     currencyCode: config.currencyCode,
   };
+  const publishLead = await latestPublishLead(config.shop);
+
   return {
     design: designForEditor(config.draftDesign, context),
     publishedDesign: config.publishedDesign,
@@ -90,6 +94,7 @@ export const loader = async ({ request }) => {
     media,
     shopBrandLogo,
     shopName: config.shopName,
+    publishRequested: Boolean(publishLead),
     updatedAt: config.updatedAt || config.syncedAt || null,
   };
 };
@@ -142,6 +147,7 @@ export default function DesignPage() {
   const loaded = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
+  const revalidator = useRevalidator();
   const [design, setDesign] = useState(loaded.design);
   const [published, setPublished] = useState(loaded.publishedDesign);
   const [studioScreen, setStudioScreen] = useState("home");
@@ -154,6 +160,7 @@ export default function DesignPage() {
   const [activeTabId, setActiveTabId] = useState("home");
   const [savedAt, setSavedAt] = useState(loaded.updatedAt);
   const [showAdd, setShowAdd] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
   const autosaveRef = useRef(designFingerprint(loaded.design));
   const skipAutosaveRef = useRef(true);
   const needsResaveRef = useRef(false);
@@ -429,15 +436,34 @@ export default function DesignPage() {
             Save draft
           </button>
           <button
-            className="studio-btn-primary"
+            className="studio-btn-ghost"
             type="button"
             onClick={() => save("publish")}
             disabled={saving}
+            title="Push this design to phone installs"
           >
-            {live ? "Publish to live app" : "Review & publish"}
+            {live ? "Update phone design" : "Push design to phone"}
+          </button>
+          <button
+            className="studio-btn-primary"
+            type="button"
+            onClick={() => setPublishOpen(true)}
+          >
+            {loaded.publishRequested ? "Launch request sent" : "Publish my app"}
           </button>
         </div>
       </header>
+
+      <PublishLeadBanner
+        open={publishOpen}
+        onClose={() => setPublishOpen(false)}
+        onSubmitted={() => {
+          shopify.toast.show("Launch request sent");
+          revalidator.revalidate();
+        }}
+        shopName={design.name || loaded.shopName}
+        alreadyRequested={loaded.publishRequested}
+      />
 
       {error ? <p className="studio-error">{error}</p> : null}
 

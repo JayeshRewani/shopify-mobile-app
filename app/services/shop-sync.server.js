@@ -3,6 +3,9 @@ import { adminGraphql, isAccessDenied } from "./admin-graphql.server";
 
 export const MOBILE_STOREFRONT_TOKEN_TITLE = "Mobile app";
 
+/** Must match `handle` in extensions/channel-config/specifications/mobile-app.toml */
+export const CHANNEL_SPECIFICATION_HANDLE = "appmint";
+
 export const STOREFRONT_SCOPES = [
   "unauthenticated_read_product_listings",
   "unauthenticated_read_product_inventory",
@@ -78,6 +81,35 @@ async function ensureShopCredentialsUnlocked({ admin, shop }) {
   );
 
   const shopData = data.shop;
+  const shopName = shopData.name || shop.replace(/\.myshopify\.com$/i, "");
+  const currencyCode = String(shopData.currencyCode || "")
+    .trim()
+    .toUpperCase();
+
+  // Persist identity first so the studio can load even if token creation fails.
+  let config = await db.shopConfig.upsert({
+    where: { shop },
+    create: {
+      shop,
+      shopName,
+      currencyCode: /^[A-Z]{3}$/.test(currencyCode) ? currencyCode : "USD",
+      metafieldDefinitions: [],
+      metaobjectDefinitions: [],
+      metaobjects: [],
+      menus: [],
+      adminOnlyMetafields: [],
+      truncated: {},
+      warnings: [],
+    },
+    update: {
+      shopName,
+      ...(/^[A-Z]{3}$/.test(currencyCode) ? { currencyCode } : {}),
+    },
+  });
+
+  // Sales-channel apps must own a Channel before Storefront tokens work.
+  await ensureSalesChannel(admin, { shop, shopName });
+
   const existingTokens = shopData.storefrontAccessTokens.nodes.filter(
     (token) => token.title === MOBILE_STOREFRONT_TOKEN_TITLE,
   );
@@ -94,8 +126,10 @@ async function ensureShopCredentialsUnlocked({ admin, shop }) {
   }
 
   const credentials = {
-    shopName: shopData.name,
-    currencyCode: shopData.currencyCode,
+    shopName,
+    currencyCode: /^[A-Z]{3}$/.test(currencyCode)
+      ? currencyCode
+      : config.currencyCode,
     storefrontAccessToken: token.accessToken,
     storefrontAccessTokenId: token.id,
     storefrontScopes: token.accessScopes
@@ -104,20 +138,9 @@ async function ensureShopCredentialsUnlocked({ admin, shop }) {
       .join(","),
   };
 
-  return db.shopConfig.upsert({
+  return db.shopConfig.update({
     where: { shop },
-    create: {
-      shop,
-      ...credentials,
-      metafieldDefinitions: [],
-      metaobjectDefinitions: [],
-      metaobjects: [],
-      menus: [],
-      adminOnlyMetafields: [],
-      truncated: {},
-      warnings: [],
-    },
-    update: credentials,
+    data: credentials,
   });
 }
 
@@ -318,6 +341,115 @@ async function refreshMetaobjectsUnlocked({ admin, shop, type }) {
 function hasStorefrontScopes(accessScopes) {
   const handles = new Set(accessScopes.map((scope) => scope.handle));
   return STOREFRONT_SCOPES.every((scope) => handles.has(scope));
+}
+
+/**
+ * Modern channel_config apps do not get Storefront API access until the shop
+ * has an app-owned Channel. create_legacy_channel_on_app_install alone is not
+ * enough for newly converted public apps — call channelCreate when missing.
+ * @see https://shopify.dev/docs/apps/build/sales-channels/channel-connections
+ */
+async function ensureSalesChannel(admin, { shop, shopName }) {
+  const listed = await adminGraphql(
+    admin,
+    `#graphql
+      query AppChannels {
+        channels(first: 25) {
+          nodes {
+            id
+            handle
+            name
+          }
+        }
+      }`,
+  );
+
+  const existing = listed.channels?.nodes || [];
+  const matched = existing.find((channel) => {
+    const handle = String(channel.handle || "").toLowerCase();
+    const name = String(channel.name || "").toLowerCase();
+    return (
+      handle.includes(CHANNEL_SPECIFICATION_HANDLE) ||
+      name.includes("appmint")
+    );
+  });
+  if (matched) return matched;
+  // channels query is often app-scoped; any remaining node is ours.
+  if (existing.length > 0 && !existing.some(isLikelyOnlineStoreChannel)) {
+    return existing[0];
+  }
+
+  const accountId = String(shop || "")
+    .replace(/\.myshopify\.com$/i, "")
+    .trim();
+  if (!accountId) {
+    throw new Error("Cannot create sales channel without a shop domain.");
+  }
+
+  const data = await adminGraphql(
+    admin,
+    `#graphql
+      mutation ChannelCreate($input: ChannelCreateInput!) {
+        channelCreate(input: $input) {
+          channel {
+            id
+            handle
+            name
+          }
+          userErrors {
+            field
+            message
+            code
+          }
+        }
+      }`,
+    {
+      input: {
+        specificationHandle: CHANNEL_SPECIFICATION_HANDLE,
+        accountId,
+        accountName: shopName || "AppMint",
+      },
+    },
+  );
+
+  const payload = data.channelCreate;
+  if (payload?.userErrors?.length || !payload?.channel) {
+    const message =
+      payload?.userErrors?.map((error) => error.message).join("; ") ||
+      "Shopify did not create the AppMint sales channel.";
+    // Race / already connected — re-query before failing hard.
+    const again = await adminGraphql(
+      admin,
+      `#graphql
+        query AppChannelsRetry {
+          channels(first: 25) {
+            nodes {
+              id
+              handle
+              name
+            }
+          }
+        }`,
+    );
+    const retryMatch = (again.channels?.nodes || []).find((channel) => {
+      const handle = String(channel.handle || "").toLowerCase();
+      return handle.includes(CHANNEL_SPECIFICATION_HANDLE);
+    });
+    if (retryMatch) return retryMatch;
+    throw new Error(message);
+  }
+
+  return payload.channel;
+}
+
+function isLikelyOnlineStoreChannel(channel) {
+  const handle = String(channel.handle || "").toLowerCase();
+  const name = String(channel.name || "").toLowerCase();
+  return (
+    handle.includes("online_store") ||
+    handle === "online-store" ||
+    name === "online store"
+  );
 }
 
 async function createStorefrontToken(admin) {

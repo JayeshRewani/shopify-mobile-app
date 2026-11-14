@@ -24,8 +24,17 @@ export function emptyDesign({ shop, shopName, currencyCode }) {
   return stampShop(blankDesign(), { shop, shopName, currencyCode });
 }
 
+function normalizeCurrencyCode(value) {
+  const currency = String(value || "").trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(currency) ? currency : "";
+}
+
 export function designForEditor(stored, context) {
-  const base = emptyDesign(context);
+  const base = emptyDesign({
+    ...context,
+    // Editor must not crash when sync has not written currency yet.
+    currencyCode: normalizeCurrencyCode(context?.currencyCode) || "USD",
+  });
   if (!stored || typeof stored !== "object" || Array.isArray(stored)) {
     return base;
   }

@@ -1,0 +1,41 @@
+handle = "appmint"
+label = "AppMint"
+icon = "icons/example-channel-icon.svg"
+
+[capabilities]
+bundles = true
+digitalProducts = true
+subscriptions = false
+unlistedProducts = false
+combinedListings = false
+scheduledPublishing = false
+
+[requirements]
+# Checkout runs through the merchant / Storefront — not an external marketplace.
+expectsOnlineStoreParity = false
+merchantOfRecord = "merchant"
+
+[[countries]]
+code = "IN"
+languages = ["en", "hi"]
+currency = "INR"
+
+[[countries]]
+code = "US"
+languages = ["en"]
+currency = "USD"
+
+[[countries]]
+code = "GB"
+languages = ["en"]
+currency = "GBP"
+
+[[countries]]
+code = "AE"
+languages = ["en", "ar"]
+currency = "AED"
+
+[[countries]]
+code = "AU"
+languages = ["en"]
+currency = "AUD"

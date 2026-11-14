@@ -1,0 +1,7 @@
+[[extensions]]
+type = "channel_config"
+name = "AppMint"
+description = "AppMint native mobile sales channel for Shopify stores"
+handle = "channel-config"
+# Create a channel connection when merchants install the app.
+create_legacy_channel_on_app_install = true

@@ -2,7 +2,7 @@
 
 Embedded Shopify admin app that lets merchants design a phone storefront. The React Native app (`MobileAppFrame`) never holds an Admin token. It bootstraps a Storefront token from this server, then loads `publishedDesign` and the live catalog.
 
-**Live host:** [https://shopify-mobile-app-tau.vercel.app](https://shopify-mobile-app-tau.vercel.app)
+**Live host:** [https://appmint-mobile-app.vercel.app](https://appmint-mobile-app.vercel.app)
 
 Built on [Shopify App React Router](https://shopify.dev/docs/api/shopify-app-react-router), Prisma (Postgres / Supabase), and Vercel.
 
@@ -72,7 +72,7 @@ See `.env.example`. Required on Vercel (Production):
 | `SHOPIFY_API_KEY` | App client id |
 | `SHOPIFY_API_SECRET` | App secret (webhooks HMAC) |
 | `SCOPES` | Must match `shopify.app.toml` (include `unauthenticated_*`, `read_orders`, `read_fulfillments`) |
-| `SHOPIFY_APP_URL` | `https://shopify-mobile-app-tau.vercel.app` |
+| `SHOPIFY_APP_URL` | `https://appmint-mobile-app.vercel.app` |
 | `MOBILE_SESSION_SECRET` | Signs short-lived `X-Mobile-Session` tokens |
 
 Optional (guest order email):
@@ -119,7 +119,7 @@ Full order security notes: [docs/mobile-orders.md](docs/mobile-orders.md).
 Phone app should set:
 
 ```text
-MOBILE_API_BASE=https://shopify-mobile-app-tau.vercel.app
+MOBILE_API_BASE=https://appmint-mobile-app.vercel.app
 SHOP_DOMAIN=<merchant>.myshopify.com
 ```
 

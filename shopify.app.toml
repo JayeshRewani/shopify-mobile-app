@@ -3,7 +3,7 @@
 
 client_id = "172f39aae878f7dfb71609b3fe1ecf33"
 name = "AppMint"
-application_url = "https://shopify-mobile-app-tau.vercel.app/"
+application_url = "https://appmint-mobile-app.vercel.app/"
 embedded = true
 
 [access_scopes]
@@ -16,7 +16,7 @@ use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
-  "https://shopify-mobile-app-tau.vercel.app/api/auth",
+  "https://appmint-mobile-app.vercel.app/api/auth",
 ]
 
 [webhooks]

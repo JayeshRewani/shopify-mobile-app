@@ -195,8 +195,8 @@ export default function PrivacyPolicy() {
           </p>
           <p>
             App: AppMint · Hosted at{" "}
-            <a href="https://shopify-mobile-app-tau.vercel.app">
-              shopify-mobile-app-tau.vercel.app
+            <a href="https://appmint-mobile-app.vercel.app">
+              appmint-mobile-app.vercel.app
             </a>
           </p>
         </article>

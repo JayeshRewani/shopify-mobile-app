@@ -1,0 +1,56 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+# Custom app: AppMint:Neidhal (client install). Linked via: npm run config:use
+
+client_id = "ad2c791162c4c55e9b57d238e9b4e41d"
+name = "AppMint:Neidhal"
+application_url = "https://appmint-neidhal.vercel.app/"
+embedded = true
+
+[access_scopes]
+# Admin scopes: merchant studio, sync, webhooks, sales-channel publishing.
+# unauthenticated_* scopes are delegated to the Storefront token the phone uses.
+# Customer Account scopes are intentionally omitted.
+scopes = "read_products,read_product_listings,read_content,read_files,read_online_store_navigation,read_metaobjects,read_metaobject_definitions,read_orders,read_fulfillments,read_publications,write_publications,unauthenticated_read_product_listings,unauthenticated_read_product_inventory,unauthenticated_write_checkouts,unauthenticated_read_checkouts,unauthenticated_read_content,unauthenticated_read_metaobjects"
+optional_scopes = []
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [
+  "https://appmint-neidhal.vercel.app/auth",
+  "https://appmint-neidhal.vercel.app/auth/callback",
+  "https://appmint-neidhal.vercel.app/api/auth",
+]
+
+[webhooks]
+api_version = "2026-07"
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/app/uninstalled"
+  topics = ["app/uninstalled"]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/app/scopes_update"
+  topics = ["app/scopes_update"]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/orders"
+  topics = [
+    "orders/create",
+    "orders/updated",
+    "orders/cancelled",
+    "orders/fulfilled",
+    "orders/partially_fulfilled",
+    "fulfillments/create",
+    "fulfillments/update",
+  ]
+
+  [[webhooks.subscriptions]]
+  compliance_topics = [
+    "customers/data_request",
+    "customers/redact",
+    "shop/redact",
+  ]
+  uri = "/webhooks/compliance"
+
+[build]
+automatically_update_urls_on_dev = true
